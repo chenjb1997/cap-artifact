@@ -1,0 +1,40 @@
+--- extracted_uninstrumented_core
++++ instrumented_core
+@@ -21,6 +21,13 @@
+ class Graph
+ {
+ public:
++
++    // Read-only query-service instrumentation; no orientation decisions change.
++    vector<unsigned char> gated_marked;
++    vector<int> gated_touched;
++    void enable_notifications(int count) { gated_marked.assign(count,0); }
++    void begin_update() { for(int v:gated_touched)gated_marked[v]=0;gated_touched.clear(); }
++    void gated_touch(int v) { if(!gated_marked[v]){gated_marked[v]=1;gated_touched.push_back(v);} }
+ 	int sz;
+ 	int PA;
+ 	int sum;
+@@ -73,6 +80,7 @@
+ 
+ void Graph::push_edge(int u, int v)
+ {
++	gated_touch(u); gated_touch(v);
+ 	Edge ne(u, v);
+ 	e[u].insert(ne);
+ 	e[v].insert(ne);
+@@ -82,6 +90,7 @@
+ 
+ void Graph::pull_edge(int u, int v)
+ {
++	gated_touch(u); gated_touch(v);
+ 	Edge ne(u, v);
+ 	auto it = e[u].find(ne);
+ 	if (it != e[u].end())
+@@ -106,6 +115,7 @@
+ 
+ void Graph::re(int u, int v)
+ {
++	gated_touch(u); gated_touch(v);
+ 	Edge ne(u, v), to(v, u);
+ 	auto it = e[u].find(ne);
+ 	e[u].erase(it);

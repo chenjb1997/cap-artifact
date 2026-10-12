@@ -1,0 +1,2 @@
+# Required only for the Exact (LP) baseline.
+ortools==9.11.4210

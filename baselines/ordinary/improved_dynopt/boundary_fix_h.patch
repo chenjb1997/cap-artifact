@@ -1,0 +1,28 @@
+--- portable/original.h
++++ portable/fixed.h
+@@ -1,5 +1,5 @@
+-#ifndef DELTA_ORIENTATIONS_improved_opt_H
+-#define DELTA_ORIENTATIONS_improved_opt_H
++#ifndef DELTA_ORIENTATIONS_improved_opt_fixed_H
++#define DELTA_ORIENTATIONS_improved_opt_fixed_H
+ 
+ #include <map>
+ #include <iostream>
+@@ -16,7 +16,7 @@
+ // if (m_adj[m_adj[v][offset].first].size() < update)                           \
+   //   throw;                                                                     \
+ 
+-class dyn_edge_orientation_improved_opt : public dyn_edge_orientation {
++class dyn_edge_orientation_improved_opt_fixed : public dyn_edge_orientation {
+ public:
+   std::pair<int,int> stored_maximum_statistics()const{return {max_out_degree,max_node_count};}
+   // Read-only reproduction instrumentation, integral orientation loads.
+@@ -26,7 +26,7 @@
+   template<class Visitor> void visit_fractional_assignments(Visitor visit) const {
+     for(size_t u=0;u<m_adj.size();++u)for(int j=0;j<m_out_degree[u];++j)visit(static_cast<int>(u),static_cast<int>(m_adj[u][j].first),1.0);
+   }
+-  dyn_edge_orientation_improved_opt(
++  dyn_edge_orientation_improved_opt_fixed(
+       const std::shared_ptr<dyn_graph_access> &GOrientation,
+       const DeltaOrientationsConfig &config, DeltaOrientationsResult &result);
+ 

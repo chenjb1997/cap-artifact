@@ -1,0 +1,54 @@
+{
+  "cap": {
+    "sources": [
+      "src/cap.cpp"
+    ],
+    "include_dirs": [
+      "src"
+    ],
+    "defines": [],
+    "libraries": [
+      "z"
+    ]
+  },
+  "cap_calendar": {
+    "sources": [
+      "src/cap_calendar.cpp"
+    ],
+    "include_dirs": [
+      "src"
+    ],
+    "defines": [],
+    "libraries": []
+  },
+  "cap_size": {
+    "sources": [
+      "src/cap_size.cpp"
+    ],
+    "include_dirs": [
+      "src"
+    ],
+    "defines": [],
+    "libraries": []
+  },
+  "cap_ablation": {
+    "sources": [
+      "src/cap_ablation.cpp"
+    ],
+    "include_dirs": [
+      "src"
+    ],
+    "defines": [],
+    "libraries": []
+  },
+  "cap_graph": {
+    "sources": [
+      "src/cap_graph.cpp"
+    ],
+    "include_dirs": [
+      "src"
+    ],
+    "defines": [],
+    "libraries": []
+  }
+}

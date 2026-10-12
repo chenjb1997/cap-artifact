@@ -1,0 +1,61 @@
+--- shared_gated_query_service
++++ isolated_pvldb_query_service
+@@ -62,7 +62,7 @@
+ struct Config {size_t cadence=1;int b=1,theta=0;double lambda=.1;Epsilon eps{1,10};std::string mode="combined",dump;bool verify=false,gate=true;};
+ struct Witness {I edges=0;std::vector<int> nodes;};
+ inline bool better(const Witness& a,I b_edges,size_t b_size){return !a.nodes.empty() && (b_size==0 || (__int128)a.edges*b_size>(__int128)b_edges*a.nodes.size());}
+-struct Query {bool skipped=false,certified=false;I time_ns=0;double before_density=0,sweep_density=-1,peel_density=-1;std::string winner="cached";};
++struct Query {bool skipped=false,certified=false;I time_ns=0;double before_density=0,sweep_density=-1,peel_density=-1,native_density=-1;std::string winner="cached";};
+ class Service {
+ public:
+  int n,b;Epsilon eps;std::vector<int> load;
+@@ -131,14 +131,19 @@
+   witness=std::move(candidate.nodes);induced=candidate.edges;
+   for(int v:witness)member[v]=1;
+  }
+- Query query(const Config& config){
++ template<class A> Query query(const Config& config,const A& algorithm){
+   const auto start=Clock::now();Query q;q.before_density=lower();
+   if(config.gate&&certificate()){q.skipped=true;q.certified=true;q.time_ns=elapsed(start);return q;}
+   // No vertex enumeration occurs on the cached scalar-return path above.
+   Witness candidate;std::string winner="cached";
++  if(config.mode=="native"||config.mode=="combined"){
++   auto native=algorithm.native_witness();
++   q.native_density=native.nodes.empty()?0.0:double(native.edges)/native.nodes.size();
++   if(better(native,induced,witness.size())){candidate=std::move(native);winner="native";}
++  }
+   if(config.mode=="combined"||config.mode=="sweep"){
+    auto s=sweep();q.sweep_density=s.nodes.empty()?0.0:double(s.edges)/s.nodes.size();
+-   if(better(s,induced,witness.size())){candidate=std::move(s);winner="sweep";}
++   if((candidate.nodes.empty()&&better(s,induced,witness.size()))||(!candidate.nodes.empty()&&better(s,candidate.edges,candidate.nodes.size()))){candidate=std::move(s);winner="sweep";}
+   }
+   if(config.mode=="combined"||config.mode=="peel"){
+    auto p=peel();q.peel_density=p.nodes.empty()?0.0:double(p.edges)/p.nodes.size();
+@@ -161,14 +166,14 @@
+ };
+ 
+ template<class A>int run(const Input& input,const std::string& output,const Config& config){
+- if(!config.cadence||(config.mode!="combined"&&config.mode!="sweep"&&config.mode!="peel"))throw std::runtime_error("bad cadence/extractor mode");
++ if(!config.cadence||(config.mode!="combined"&&config.mode!="sweep"&&config.mode!="peel"&&config.mode!="native"))throw std::runtime_error("bad cadence/extractor mode");
+  auto init_start=Clock::now();
+  std::map<std::string,double> dp{{"lambda",config.lambda}};std::map<std::string,int64_t> ip{{"b",config.b},{"theta",config.theta}};
+  std::ostringstream construction_log;auto* old=std::cout.rdbuf(construction_log.rdbuf());A a(input.graph,dp,ip);std::cout.rdbuf(old);
+  Service service(input.graph.n,config.b,config.eps);a.begin_update();const I initialization_ns=elapsed(init_start);
+  std::ofstream out(output),updates(output+".updates.csv"),state;
+  if(!out||!updates)throw std::runtime_error("cannot create outputs");if(!config.dump.empty()&&config.dump!="-")state.open(config.dump);
+- out<<std::setprecision(17)<<"step,n,m,witness_density,upper_bound,certified_ratio,certificate_pass,witness_size,query_skipped,query_ns,sweep_density,peeling_density,before_density,winner,cumulative_queries,cumulative_skips,skip_rate\n";
++ out<<std::setprecision(17)<<"step,n,m,witness_density,upper_bound,certified_ratio,certificate_pass,witness_size,query_skipped,query_ns,sweep_density,peeling_density,native_density,before_density,winner,cumulative_queries,cumulative_skips,skip_rate\n";
+  updates<<std::setprecision(17)<<"step,op,upstream_update_ns,algorithm_update_ns,aux_update_ns,service_update_ns,query_ns,total_service_ns,is_query,query_skipped,certificate_pass,m,cached_witness_density,upper_bound,changed_vertices\n";
+  state<<std::setprecision(17);
+  I queries=0,skips=0,certified=0,total_upstream=0,total_aux=0,total_service=0,total_query=0;
+@@ -179,8 +184,8 @@
+   aux_start=Clock::now();service.synchronize(a);aux+=elapsed(aux_start);const I service_time=elapsed(service_start);
+   total_upstream+=upstream;total_aux+=aux;total_service+=service_time;
+   const bool is_query=(t+1)%config.cadence==0||t+1==input.events.size();Query q;
+-  if(is_query){q=service.query(config);++queries;skips+=q.skipped;certified+=q.certified;total_query+=q.time_ns;
+-   out<<t<<','<<input.graph.n<<','<<service.edges.size()<<','<<service.lower()<<','<<service.upper()<<','<<(service.upper()>0?service.lower()/service.upper():1.0)<<','<<q.certified<<','<<service.witness.size()<<','<<q.skipped<<','<<q.time_ns<<','<<q.sweep_density<<','<<q.peel_density<<','<<q.before_density<<','<<q.winner<<','<<queries<<','<<skips<<','<<double(skips)/queries<<'\n';
++  if(is_query){q=service.query(config,a);++queries;skips+=q.skipped;certified+=q.certified;total_query+=q.time_ns;
++   out<<t<<','<<input.graph.n<<','<<service.edges.size()<<','<<service.lower()<<','<<service.upper()<<','<<(service.upper()>0?service.lower()/service.upper():1.0)<<','<<q.certified<<','<<service.witness.size()<<','<<q.skipped<<','<<q.time_ns<<','<<q.sweep_density<<','<<q.peel_density<<','<<q.native_density<<','<<q.before_density<<','<<q.winner<<','<<queries<<','<<skips<<','<<double(skips)/queries<<'\n';
+    if(state){state<<"{\"step\":"<<t<<",\"witness\":[";for(size_t j=0;j<service.witness.size();++j){if(j)state<<',';state<<service.witness[j];}state<<"],\"loads\":[";for(int v=0;v<service.n;++v){if(v)state<<',';state<<double(service.load[v])/service.b;}state<<"]}\n";}
+   }
+   if(config.verify)service.validate(a); // intentionally outside all service timers

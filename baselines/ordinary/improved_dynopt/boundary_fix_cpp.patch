@@ -1,0 +1,78 @@
+--- portable/original.cpp
++++ portable/fixed.cpp
+@@ -1,7 +1,7 @@
+ //
+ //
+ 
+-#include "dyn_edge_orientation_improved_opt.h"
++#include "dyn_edge_orientation_improved_opt_fixed.h"
+ #include <algorithm>
+ #include <cassert>
+ #include <iostream>
+@@ -9,7 +9,7 @@
+ #include <cmath>
+ #include <tuple>
+ 
+-dyn_edge_orientation_improved_opt::dyn_edge_orientation_improved_opt(
++dyn_edge_orientation_improved_opt_fixed::dyn_edge_orientation_improved_opt_fixed(
+     const std::shared_ptr<dyn_graph_access> &GOrientation,
+     const DeltaOrientationsConfig &config, DeltaOrientationsResult &result)
+     : dyn_edge_orientation(GOrientation, config, result) {
+@@ -19,7 +19,7 @@
+   m_adj.resize(GOrientation->number_of_nodes());
+ }
+ 
+-void dyn_edge_orientation_improved_opt::handleInsertion(NodeID source, NodeID target) {
++void dyn_edge_orientation_improved_opt_fixed::handleInsertion(NodeID source, NodeID target) {
+   if (m_out_degree[source] > m_out_degree[target]) {
+     std::swap(target, source);
+   }
+@@ -71,7 +71,7 @@
+   }
+ }
+ 
+-void dyn_edge_orientation_improved_opt::handleDeletion(NodeID source, NodeID target) {
++void dyn_edge_orientation_improved_opt_fixed::handleDeletion(NodeID source, NodeID target) {
+   //   if (o > 7)
+   // std::cout << "HANDLE DELETE" << std::endl;
+   NodeID decremented;
+@@ -152,7 +152,7 @@
+   }
+ }
+ 
+-bool dyn_edge_orientation_improved_opt::bfs_forward(NodeID source) {
++bool dyn_edge_orientation_improved_opt_fixed::bfs_forward(NodeID source) {
+   if(m_out_degree[source] > 1){
+     std::vector<NodeID> touched;
+     std::queue<NodeID> bfsqueue;
+@@ -219,7 +219,7 @@
+   }
+ }
+ 
+-bool dyn_edge_orientation_improved_opt::bfs_backward(NodeID source) {
++bool dyn_edge_orientation_improved_opt_fixed::bfs_backward(NodeID source) {
+   std::vector<NodeID> touched;
+   std::queue<NodeID> bfsqueue;
+   int m_max_degree = m_out_degree[source] + 1;
+@@ -278,7 +278,7 @@
+   return found_lower_deg_vertex;
+ }
+ 
+-void dyn_edge_orientation_improved_opt::find_optimal() {
++void dyn_edge_orientation_improved_opt_fixed::find_optimal() {
+   if(max_out_degree > 1){
+     //std::cout << "Start find optimal: " << std::endl;
+     bool path_improved = true;
+@@ -309,4 +309,12 @@
+       }
+     }
+   }
++  // Reproduction fix: find_optimal must also refresh the number of maximum
++  // vertices when the maintained maximum reaches 1 (or 0).
++  if (max_out_degree <= 1) {
++    max_node_count = 0;
++    for (unsigned i = 0; i < m_adj.size(); ++i)
++      if (m_out_degree[i] == max_out_degree) ++max_node_count;
++  }
++
+ }

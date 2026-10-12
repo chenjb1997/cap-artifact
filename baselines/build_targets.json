@@ -1,0 +1,57 @@
+{
+  "udshp": {
+    "sources": [
+      "baselines/udshp/run.cpp",
+      "baselines/udshp/core/DynamicGraph-singleInstance.cpp",
+      "baselines/udshp/core/DynOpManager-singleInstance.cpp",
+      "baselines/udshp/include/EdgeManager.cpp"
+    ],
+    "include_dirs": [
+      "baselines/udshp/core",
+      "baselines/udshp/include",
+      "baselines/common"
+    ],
+    "defines": [
+      "HB_PROFILE=0"
+    ],
+    "libraries": [
+      "z"
+    ]
+  },
+  "cq": {
+    "sources": [
+      "baselines/cq/run.cpp"
+    ],
+    "include_dirs": [
+      "baselines/common"
+    ],
+    "defines": [],
+    "libraries": [
+      "z"
+    ]
+  },
+  "improved_dynopt": {
+    "sources": [
+      "baselines/ordinary/improved_dynopt/run.cpp",
+      "baselines/ordinary/improved_dynopt/lib/algorithms/dyn_edge_orientation_improved_opt.cpp",
+      "baselines/ordinary/improved_dynopt/lib/algorithms/dyn_edge_orientation_improved_opt_fixed.cpp",
+      "baselines/ordinary/improved_dynopt/lib/algorithms/dyn_edge_orientation_strong_opt.cpp"
+    ],
+    "include_dirs": [
+      "baselines/ordinary/improved_dynopt/lib",
+      "baselines/ordinary/improved_dynopt/lib/algorithms"
+    ],
+    "defines": [],
+    "libraries": []
+  },
+  "insdel": {
+    "sources": [
+      "baselines/ordinary/insdel/run.cpp"
+    ],
+    "include_dirs": [
+      "baselines/ordinary/insdel"
+    ],
+    "defines": [],
+    "libraries": []
+  }
+}

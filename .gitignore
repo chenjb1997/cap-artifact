@@ -1,0 +1,12 @@
+# Generated builds, data, and experiment output
+/build/
+/results/
+/data/raw/
+/data/processed/
+Manifest.toml
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+.DS_Store
+Thumbs.db
