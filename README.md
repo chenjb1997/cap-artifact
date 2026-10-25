@@ -5,6 +5,13 @@ and the data preparation scripts for dynamic densest-subgraph experiments on
 graphs and hypergraphs. The algorithms process edge insertions and deletions;
 hypergraph queries return a vertex set with high induced density.
 
+This repository accompanies **Scalable Approximate Algorithm for Dynamic Densest
+Subhypergraphs with Solution-Guided Maintenance**. The standalone
+[Supplement Material (PDF)](Supplement-Material.pdf) contains supporting proofs,
+complete maintenance-time accounting, and the CQ reconstruction and evaluation
+protocol. The source code, baselines, and data preparation scripts are provided
+in this repository.
+
 Start with the small example below. Large datasets are downloaded from their
 public sources and processed locally; they are not stored in this repository.
 
@@ -240,6 +247,7 @@ rerun of the paper's large timing experiments.
 ## Repository layout
 
 ```text
+Supplement-Material.pdf  Standalone supplementary proofs and evaluation protocol
 src/          CAP kernels, faithful input adapters, independent observers
 baselines/    Baseline source, adapters, provenance, and upstream licenses
 scripts/      Build, download, preprocessing, validation, and experiment entry points
